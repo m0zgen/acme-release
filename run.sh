@@ -26,6 +26,11 @@ confirm() {
     esac
 }
 
+exit_0() {
+    echo -e "\nOk. Exit. Bye!\n"
+    exit 0
+}
+
 # -------------------------------------------------------------------------------------------\
 
 # Get domain name from user
@@ -36,23 +41,28 @@ if [[ -z "${my_domain}" ]]; then
     exit 1
 fi
 
-OUTPUT=`whois ${my_domain}`
-if echo "$OUTPUT" | grep -i -e "No match for" -e "No whois server"; then
+echo "Checking domain for exists..."
+
+OUTPUT=`dig ${my_domain}`
+if echo "$OUTPUT" | grep -i -e "status: NXDOMAIN" -e "No match for" -e "No whois server"; then
     echo "Domain does not exists. Exit. Bye."
     exit 1
 fi
 
-echo "Try to release certs for: ${my_domain}!"
+echo "Ok."
 
-# Run acme for release
-# . "/$USER/.acme.sh/acme.sh.env"
-$ACME --server zerossl --issue -d ${my_domain} --dns dns_cf --ocsp-must-staple --keylength 4096
+if confirm "Release certs for: ${my_domain}? (y/n or enter for exit)"; then
+    # Run acme for release
+    # . "/$USER/.acme.sh/acme.sh.env"
+    $ACME --server zerossl --issue -d ${my_domain} --dns dns_cf --ocsp-must-staple --keylength 4096
+else
+    exit_0
+fi
 
 if confirm "Install cert? (y/n or enter)"; then
     $ACME --install-cert -d ${my_domain} --cert-file ${TARGET}/${my_domain}/cert --key-file ${TARGET}/${my_domain}/key --fullchain-file ${TARGET}/${my_domain}/fullchain --reloadcmd "chmod -R 640 /etc/nginx/certs/;"
 else
-    echo -e "\nOk. Exit. Bye!\n"
-    exit 0
+    exit_0
 fi
 
 
