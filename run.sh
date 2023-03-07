@@ -45,8 +45,8 @@ fi
 echo "Try to release certs for: ${my_domain}!"
 
 # Run acme for release
-. "/root/.acme.sh/acme.sh.env"
-# $ACME --server zerossl --issue -d ${my_domain} --dns dns_cf --ocsp-must-staple --keylength 4096
+# . "/$USER/.acme.sh/acme.sh.env"
+$ACME --server zerossl --issue -d ${my_domain} --dns dns_cf --ocsp-must-staple --keylength 4096
 
 if confirm "Install cert? (y/n or enter)"; then
     $ACME --install-cert -d ${my_domain} --cert-file ${TARGET}/${my_domain}/cert --key-file ${TARGET}/${my_domain}/key --fullchain-file ${TARGET}/${my_domain}/fullchain --reloadcmd "chmod -R 640 /etc/nginx/certs/;"
